@@ -7,7 +7,7 @@ const RiskAssessment: React.FC = () => {
     return (
         <div className={"flex-1 transition-all duration-300 ease-in-out h-full w-full flex items-center justify-center"}>
             {isStart ? (
-                <div className="h-full w-full flex items-center justify-center py-4">
+                <div className="h-full w-full flex py-16 justify-center ">
                     <MultiForm/>
                 </div>
             ) : (

@@ -11,15 +11,13 @@ from app.config import Config  # Import your Config class properly
 
 
 def create_app():
-    load_dotenv()  # Load environment variables from .env file
+    load_dotenv()
 
     app = Flask(__name__)
-    app.config.from_object(Config)  # Load config from your Config class
+    app.config.from_object(Config)
 
-    CORS(app)  # Enable CORS
+    CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
 
-    # Register blueprints with URL prefixes
-    # app.register_blueprint(welcome_blueprint, url_prefix="/")
     app.register_blueprint(document_blueprint, url_prefix="/api/document")
     app.register_blueprint(risk_blueprint, url_prefix="/api/risk")
     app.register_blueprint(chatbot_blueprint, url_prefix="/api/chatbot")

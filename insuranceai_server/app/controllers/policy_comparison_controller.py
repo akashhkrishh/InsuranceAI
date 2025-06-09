@@ -26,7 +26,6 @@ def compare_policies():
     if missing:
         return jsonify({"error": f"Policies not found: {', '.join(missing)}"}), 404
 
-    # Build the prompt for the LLM
     prompt_lines = [
         "You are an expert insurance advisor.",
         "Compare the following insurance policies based on the user's profile.",

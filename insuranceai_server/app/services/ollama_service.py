@@ -7,7 +7,6 @@ class OllamaService:
         self.model = config.get("LLM_MODEL_NAME")
 
     def chat(self, user_id, user_message=None, messages=None):
-        # Use messages if given, else build from single user_message
         if messages is None:
             messages = [{"role": "user", "content": user_message}]
 

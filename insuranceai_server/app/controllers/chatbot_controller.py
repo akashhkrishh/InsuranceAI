@@ -3,22 +3,44 @@ from app.services.ollama_service import OllamaService
 
 chatbot_blueprint = Blueprint("chatbot", __name__)
 
-# In-memory conversation store: user_id -> list of messages
 conversation_contexts = {}
 
-@chatbot_blueprint.route('/', methods=['POST'])
+SYSTEM_PROMPT = {
+    "role": "system",
+    "content": (
+        "You are an insurance assistant. You only answer insurance-related questions and respond in simple language. "
+        "If the question relates to any claim, provide the link http://localhost:5173/claim-assistant. "
+        "If the question is not related to insurance, respond with 'Not a relevant question.' "
+        "Greeting messages and questions like 'Who are you?' are allowed."
+        "Suggest a question related to insurance."
+    )
+}
+@chatbot_blueprint.route('/chat', methods=['POST'])
 def chat():
     data = request.json or {}
     user_id = data.get("user_id")
     user_message = data.get("message")
 
-    if not user_id or not user_message:
-        return jsonify({"error": "Missing 'user_id' or 'message' in request"}), 400
+    if not user_id:
+        return jsonify({"error": "Missing 'user_id' in request"}), 400
 
-    # Load conversation history or start new
     history = conversation_contexts.get(user_id, [])
 
-    # Add user message to history
+
+    if not history or (not user_message or user_message.strip() == ""):
+        welcome_message = "I am an Insurance Assistant. Ask me a question."
+        conversation_contexts[user_id] = [
+            SYSTEM_PROMPT,
+            {"role": "assistant", "content": welcome_message}
+        ]
+        return jsonify({
+            "user_id": user_id,
+            "response": welcome_message
+        })
+
+    if not user_message or user_message.strip() == "":
+        return jsonify({"error": "Missing 'message' in request"}), 400
+
     history.append({"role": "user", "content": user_message})
 
     try:
@@ -28,13 +50,10 @@ def chat():
         }
         ollama = OllamaService(config)
 
-        # Pass full conversation history to chat method
         response_text = ollama.chat(user_id=user_id, messages=history)
 
-        # Add assistant reply to history
         history.append({"role": "assistant", "content": response_text})
 
-        # Save updated conversation (limit history to last 20 messages)
         conversation_contexts[user_id] = history[-20:]
 
         return jsonify({

@@ -24,10 +24,9 @@ def risk_ask():
         next_question = QUESTIONS[current_index]
         return jsonify({"done": False, "question": next_question})
 
-    # Step 2: Build LLM prompt
     prompt_lines = [
-        "You are an expert health insurance analyst.",
-        "Based on the following answers, provide a risk score, summary, and 2–4 coverage suggestions.",
+        "You are an expert insurance analyst.",
+        "Must include Based on the following answers, provide a risk score, summary, and 2–4 coverage suggestions.",
         "Respond ONLY in JSON with this format:",
         "{",
         '  "risk_score": "Low | Medium | High",',
@@ -37,7 +36,6 @@ def risk_ask():
         "Only return valid JSON.\n"
     ]
 
-    # Get answers in order
     ordered_answers = [answers.get(str(i), "") for i in range(len(QUESTIONS))]
 
     for question, answer in zip(QUESTIONS, ordered_answers):
@@ -54,7 +52,6 @@ def risk_ask():
 
         raw_response = ollama.chat(user_id="risk_assessment", user_message=prompt_text)
 
-        # Try parsing the response as JSON
         try:
             llm_response = json.loads(raw_response)
         except json.JSONDecodeError:

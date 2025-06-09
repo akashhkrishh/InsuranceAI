@@ -10,8 +10,11 @@ const MultiStepForm: React.FC = () => {
     const [result, setResult] = useState<any>(null);
 
     useEffect(() => {
-        fetchQuestion(answers);
+        if (Object.keys(answers).length === 0) {
+            fetchQuestion({});
+        }
     }, []);
+
 
     const fetchQuestion = async (currentAnswers: Record<number, string>) => {
         try {
@@ -23,7 +26,7 @@ const MultiStepForm: React.FC = () => {
                 setResult(res.data.llm_response);
             } else {
                 setCurrentQuestion(res.data.question);
-                setCurrentStep(Object.keys(currentAnswers).length); // Update based on answers length
+                setCurrentStep(Object.keys(currentAnswers).length);
             }
         } catch (err) {
             console.error("Error fetching question", err);
@@ -54,53 +57,73 @@ const MultiStepForm: React.FC = () => {
 
     if (result) {
         return (
-            <div className="h-full mx-20 bg-white p-8 mt-10">
-                <h2 className="text-2xl font-bold mb-4">Risk Assessment Result</h2>
-                <p><strong>Risk Score:</strong> {result.risk_score}</p>
-                <p className="mt-2"><strong>Summary:</strong> {result.summary}</p>
-                <div className="mt-4">
-                    <strong>Suggestions:</strong>
-                    <ul className="list-disc pl-5 mt-1">
-                        {result.suggestions?.map((s: string, i: number) => (
-                            <li key={i}>{s}</li>
-                        ))}
-                    </ul>
-                </div>
+            <div className="mx-auto max-w-2xl bg-white  ">
+                <h2 className="text-4xl font-semibold mb-4">Risk Assessment Result</h2>
+
+                <p className="text-lg">
+                    <strong className={"text-blue-500 font-semibold"}>Risk Score:</strong>{" "}
+                    <span
+                        className={`font-semibold ${
+                            result.risk_score === "High"
+                                ? "text-red-500"
+                                : result.risk_score === "Low"
+                                    ? "text-green-500"
+                                    : "text-yellow-500"
+                        }`}
+                    >
+                    {result.risk_score}
+                </span>
+                </p>
+
+                <p className="mt-2 text-base">
+                    <strong className={"text-blue-500 font-semibold text-lg text-justify"}>Summary:</strong> {result.summary}
+                </p>
+
+                {result.suggestions?.length > 0 && (
+                    <div className="mt-4">
+                        <strong className={"text-blue-500 text-lg font-semibold"}>Suggestions:</strong>
+                        <ul className="list-disc pl-5 mt-1 space-y-1">
+                            {result.suggestions.map((s: string, i: number) => (
+                                <li key={i}>{s}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
             </div>
         );
     }
 
-    return (
-        <div className="flex items-center justify-center px-4  ">
-            <div className="w-full max-w-lg bg-white p-8  relative">
-                {/* Progress Indicator */}
-                <div className="w-[500px]  bg-gray-200 h-2 mb-6 rounded">
-                    <div
-                        className="bg-blue-500 h-2 rounded transition-all duration-300"
-                        style={{ width: `${((currentStep + 1) / 6) * 100}%` }}
-                    />
-                </div>
 
-                {/* Question */}
-                <p className="mb-4 text-lg font-medium">
-                    {currentStep + 1}. {currentQuestion}
-                </p>
+    return (
+        <div className="flex items-center justify-center px-4 w-full  relative">
+            <div className="w-full flex items-center  flex-col  bg-white p-8  ">
+                <div className={"flex flex-col"}>
+                    <div className="w-[500px]  bg-gray-200 h-2 mb-6 ">
+                        <div
+                            className="bg-blue-500 h-2  transition-all duration-300"
+                            style={{ width: `${((currentStep + 1) / 6) * 100}%` }}
+                        />
+                    </div>
+
+                    <p className="mb-4 text-lg font-medium">
+                        {currentStep + 1}. {currentQuestion}
+                    </p>
+                </div>
                 <input
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Your Answer"
-                    className="w-[500px] border border-gray-300 p-3 focus:outline-blue-500 rounded"
+                    className="w-[500px] border border-gray-300 p-3 focus:outline-blue-500 "
                     disabled={isSubmitting}
                 />
 
-                {/* Buttons */}
                 <div className="flex justify-end w-[500px]  mt-6">
                     <button
                         type="button"
                         onClick={handleNext}
-                        className={`px-6 py-2 text-white rounded ${
+                        className={`px-6 py-2 text-white  ${
                             isSubmitting ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
                         }`}
                         disabled={isSubmitting}
@@ -109,10 +132,9 @@ const MultiStepForm: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Thinking Animation */}
                 {isSubmitting && (
-                    <div className="absolute inset-0 bg-white/70 flex items-center justify-center flex-1 z-10">
-                        <div className="flex items-center space-x-3 w-screen">
+                    <div className="absolute inset-0 w-full bg-white/75 flex items-center justify-center flex-1 z-10">
+                        <div className="flex items-center justify-center space-x-3 w-screen">
                             <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
                             <span className="text-blue-600 font-medium">Thinking...</span>
                         </div>

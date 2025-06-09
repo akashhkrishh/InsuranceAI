@@ -1,5 +1,3 @@
-# controllers/claims_controller.py
-
 from flask import Blueprint, jsonify, current_app
 from app.data import POLICIES_DB
 from app.services.ollama_service import OllamaService
@@ -51,10 +49,7 @@ def get_claim_process(policy_id):
         )
 
 
-        # Attempt to parse JSON response
         result = json.loads(ai_response)
-
-        # Validate keys in the response, else fallback
         claim_process = result.get("claim_process")
         simple_explanation = result.get("simple_explanation")
 
@@ -62,7 +57,6 @@ def get_claim_process(policy_id):
             raise ValueError("Missing keys in AI response")
 
     except Exception as e:
-        # Fallback to DB claim_process if AI fails
         claim_process = policy.get("claim_process", {})
         simple_explanation = (
             "To file a claim, follow the documented steps provided with your policy."
